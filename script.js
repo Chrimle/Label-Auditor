@@ -1,21 +1,10 @@
+module.exports = async ({github, context, core}) => {
 
-module.exports = async ({ github, context, core }) => {
+    const categoriesRequiringSemanticVersion = process.env.SEMVER_REQ_LABELS.split(',').map(s => s.trim());
 
-    const categoriesRequiringSemanticVersion = ['feat', 'bug'];
+    const requiredCategories = process.env.REQ_LABELS.split(',').map(s => s.trim());
 
-    const requiredCategories = [
-        'bug',
-        'dependencies',
-        'doc',
-        'feat',
-        'meta',
-        'preview',
-        'refactor',
-        'security',
-        'test'
-    ];
-
-    const semanticVersions = ['MAJOR', 'MINOR', 'PATCH'];
+    const semanticVersions = process.env.SEMVER_LABELS.split(',').map(s => s.trim());
 
     const labels = context.payload.pull_request.labels;
     if (labels.filter(label => requiredCategories.includes(label.name)).length == 0) {
