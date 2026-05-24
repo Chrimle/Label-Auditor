@@ -1,6 +1,9 @@
 name: 'Label Auditor'
 description: 'Enforces PR label requirements, according to Semantic Versioning.'
 author: 'Chrimle'
+branding:
+  icon: tag
+  color: green
 
 inputs:
   required-labels:
