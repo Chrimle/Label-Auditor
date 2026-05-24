@@ -20,7 +20,7 @@ runs:
   using: 'composite'
   steps:
     - name: Audit PR Labels
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       env:
         REQ_LABELS: ${{ inputs.required-labels }}
         SEMVER_REQ_LABELS: ${{ inputs.semver-required-labels }}
