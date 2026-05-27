@@ -7,13 +7,14 @@ module.exports = async ({github, context, core}) => {
     const semanticVersions = process.env.SEMVER_LABELS.split(',').map(s => s.trim());
 
     const labels = context.payload.pull_request.labels;
-    if (labels.filter(label => requiredCategories.includes(label.name)).length == 0) {
+    if (labels.filter(label => requiredCategories.includes(label.name)).length === 0) {
         throw new Error(`Pull Request requires one of the following labels: ${requiredCategories.join(', ')}`);
     }
-    if (labels.filter(label => categoriesRequiringSemanticVersion.includes(label.name)).length > 0) {
-        if (labels.filter(label => semanticVersions.includes(label.name)).length == 0) {
-            throw new Error(`Pull Request requires a 'Semantic version'-label for the following labels: ${categoriesRequiringSemanticVersion.join(', ')}`);
-        }
+    if (labels.filter(label => categoriesRequiringSemanticVersion.includes(label.name)).length === 0) {
+        return;
+    }
+    if (labels.filter(label => semanticVersions.includes(label.name)).length === 0) {
+        throw new Error(`Pull Request requires a 'Semantic version'-label for the following labels: ${categoriesRequiringSemanticVersion.join(', ')}`);
     }
 };
 
