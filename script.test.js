@@ -54,7 +54,7 @@ async function runTests() {
 
     // TEST 4: Succeeds when all labels are correct
     try {
-        const context = { payload: { pull_request: { labels: [{ name: 'feature' }, { name: 'minor' }] } } };
+        const context = { payload: { pull_request: { labels: [{ name: 'feat' }, { name: 'minor' }] } } };
         await assert.doesNotReject(
             checkLabels({ context })
         );
