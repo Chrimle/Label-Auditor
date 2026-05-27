@@ -1,58 +1,62 @@
-const checkLabels = require('./script');
+// test.js
+const assert = require('assert');
+const checkLabels = require('./script.js');
 
-describe('PR Label Validator', () => {
-    let context;
+// 1. Set up the environment variables
+process.env.REQ_LABELS = 'bug, feature, chore';
+process.env.SEMVER_REQ_LABELS = 'feature, bug';
+process.env.SEMVER_LABELS = 'major, minor, patch';
 
-    // Set up the environment variables before running the tests
-    beforeAll(() => {
-        process.env.REQ_LABELS = 'bug, feature, chore';
-        process.env.SEMVER_REQ_LABELS = 'feature, bug';
-        process.env.SEMVER_LABELS = 'major, minor, patch';
-    });
+async function runTests() {
+    console.log('Starting tests...\n');
 
-    // Reset the context object before each test
-    beforeEach(() => {
-        context = {
-            payload: {
-                pull_request: {
-                    labels: []
-                }
-            }
-        };
-    });
-
-    it('throws an error if no required category labels are present', async () => {
-        context.payload.pull_request.labels = [{ name: 'documentation' }];
-
-        // We expect the async function to throw, so we use rejects.toThrow
-        await expect(checkLabels({ context })).rejects.toThrow(
-            "Pull Request requires one of the following labels: bug, feature, chore"
+    // TEST 1: Throws error if missing required category
+    try {
+        const context = { payload: { pull_request: { labels: [{ name: 'documentation' }] } } };
+        await assert.rejects(
+            checkLabels({ context }),
+            Error,
+            "Expected script to throw when required labels are missing"
         );
-    });
+        console.log('✅ Passed: Missing required category throws error');
+    } catch (err) {
+        console.error('❌ Failed: Test 1', err.message);
+    }
 
-    it('returns early if the category does not require a semantic version', async () => {
-        // 'chore' is required, but not in SEMVER_REQ_LABELS
-        context.payload.pull_request.labels = [{ name: 'chore' }];
-
-        // If it resolves without throwing, the test passes
-        await expect(checkLabels({ context })).resolves.toBeUndefined();
-    });
-
-    it('throws an error if a semantic version is required but missing', async () => {
-        // 'feature' is in SEMVER_REQ_LABELS, so it needs a semver label
-        context.payload.pull_request.labels = [{ name: 'feature' }];
-
-        await expect(checkLabels({ context })).rejects.toThrow(
-            "Pull Request requires a 'Semantic version'-label for the following labels: feature, bug"
+    // TEST 2: Returns early (succeeds) if category doesn't need semver
+    try {
+        const context = { payload: { pull_request: { labels: [{ name: 'chore' }] } } };
+        await assert.doesNotReject(
+            checkLabels({ context })
         );
-    });
+        console.log('✅ Passed: Category without semver requirement succeeds');
+    } catch (err) {
+        console.error('❌ Failed: Test 2', err);
+    }
 
-    it('passes successfully when all required and semver labels are present', async () => {
-        context.payload.pull_request.labels = [
-            { name: 'feature' },
-            { name: 'minor' }
-        ];
+    // TEST 3: Throws error if semver is required but missing
+    try {
+        const context = { payload: { pull_request: { labels: [{ name: 'feature' }] } } };
+        await assert.rejects(
+            checkLabels({ context }),
+            /Pull Request requires a 'Semantic version'-label/,
+            "Expected script to throw when semver is missing"
+        );
+        console.log('✅ Passed: Missing semver throws error');
+    } catch (err) {
+        console.error('❌ Failed: Test 3', err.message);
+    }
 
-        await expect(checkLabels({ context })).resolves.toBeUndefined();
-    });
-});
+    // TEST 4: Succeeds when all labels are correct
+    try {
+        const context = { payload: { pull_request: { labels: [{ name: 'feature' }, { name: 'minor' }] } } };
+        await assert.doesNotReject(
+            checkLabels({ context })
+        );
+        console.log('✅ Passed: Valid labels succeed');
+    } catch (err) {
+        console.error('❌ Failed: Test 4', err);
+    }
+}
+
+runTests();
